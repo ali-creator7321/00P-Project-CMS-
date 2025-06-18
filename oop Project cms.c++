@@ -1,5 +1,4 @@
 
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -16,7 +15,7 @@ public:
     Product(int id, string name, double price)
         : id(id), name(name), price(price) {}
 
-    virtual void display() const {   //virtual Function
+    virtual void display() const {
         cout << "ID: " << id << ", Name: " << name << ", Price: Rs." << price << endl;
     }
 
@@ -27,14 +26,14 @@ public:
     double getPrice() const { return price; }
     virtual ~Product() {}
 };
-// ---------- TShirt Child Class ----------
+
 class TShirt : public Product {
     string size;
 public:
     TShirt(int id, string name, double price, string size)
         : Product(id, name, price), size(size) {}
 
-    void display() const override {    //Override Function
+    void display() const override {
         Product::display();
         cout << "Size: " << size << ", Category: TShirt\n";
     }
@@ -42,14 +41,14 @@ public:
     string getCategory() const override { return "TShirt"; }
     string getExtra() const override { return size; }
 };
-// ---------- Hoodie Child Class ----------
+
 class Hoodie : public Product {
     string material;
 public:
     Hoodie(int id, string name, double price, string material)
         : Product(id, name, price), material(material) {}
 
-    void display() const override {    //Override Function
+    void display() const override {
         Product::display();
         cout << "Material: " << material << ", Category: Hoodie\n";
     }
@@ -70,13 +69,19 @@ public:
         loadFromFile();
     }
 
-    void addProduct(Product* p) {
-        if (count < 100) {
-            products[count++] = p;
-            cout << "Product added successfully!\n";
-            saveToFile();
-        }
+   void addProduct(Product* p) {
+    if (isDuplicateId(p->getId())) {
+        cout << "Error: Product with ID " << p->getId() << " already exists!\n";
+        delete p;  // memory leak avoid karne ke liye
+        return;
     }
+
+    if (count < 100) {
+        products[count++] = p;
+        cout << "Product added successfully!\n";
+        saveToFile();
+    }
+}
 
     void deleteProduct(int id) {
         for (int i = 0; i < count; ++i) {
@@ -93,20 +98,20 @@ public:
         cout << "Product with ID " << id << " not found.\n";
     }
 
-    void showAllProducts() const {
-        if (count == 0) {
-            cout << "\nNo products available.\n";
-            return;
-        }
-        cout << "\n---- Product List ----\n";
-        for (int i = 0; i < count; ++i) {
-            products[i]->display();
-            cout << "----------------------\n";
-        }
+ 
+
+bool isDuplicateId(int id) const {
+    for (int i = 0; i < count; ++i) {
+        if (products[i]->getId() == id)
+            return true;
     }
-// ---------- Saving Data To File ----------
+    return false;
+}
+
+
+
     void saveToFile() {
-        ofstream out("cmsproduct.txt");
+        ofstream out("cmsproducts.txt");
         for (int i = 0; i < count; ++i) {
             out << products[i]->getCategory() << " "
                 << products[i]->getId() << " "
@@ -116,15 +121,18 @@ public:
         }
         out.close();
     }
-// ----------Fetching Data From File ----------
+
     void loadFromFile() {
-        ifstream in("cmsproduct.txt");
+        ifstream in("cmsproducts.txt");
         string type;
         while (in >> type) {
             int id;
             string extra, name;
             double price;
-            in >> id >> extra >> name >> price;
+            in >> id >> extra;
+            in.ignore(); // ignore space before name
+            getline(in, name, ' '); // read name till space (not ideal for multi-word)
+            in >> price;
 
             if (type == "TShirt")
                 products[count++] = new TShirt(id, name, price, extra);
@@ -145,8 +153,7 @@ void showMenu() {
     cout << "\n===== Clothing Management System =====\n";
     cout << "1. Add TShirt\n";
     cout << "2. Add Hoodie\n";
-    cout << "3. Delete Product\n";
-    cout << "4. Show All Products\n";
+    cout << "5. Delete Product\n";
     cout << "0. Exit\n";
     cout << "Choose an option: ";
 }
@@ -184,18 +191,23 @@ int main() {
             store.addProduct(new Hoodie(id, name, price, material));
             break;
         }
-        case 3:
+
+        case 5:
+        {
             cout << "Enter ID to delete: "; cin >> id;
             store.deleteProduct(id);
             break;
-        case 4:
-            store.showAllProducts();
-            break;
+        }
+        
         case 0:
+        {
             cout << "Exiting system. Goodbye!\n";
             break;
+        }
         default:
+        {
             cout << "Invalid option.\n";
+        }   
         }
     } while (choice != 0);
 
