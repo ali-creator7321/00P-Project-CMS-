@@ -57,6 +57,21 @@ public:
     string getExtra() const override { return material; }
 };
 
+class Kurta : public Product {
+     string fabric;
+ public:
+     Kurta(int id, string name, double price, string fabric)
+         : Product(id, name, price), fabric(fabric) {}
+
+     void display() const override {
+         Product::display();
+         cout << "Fabric: " << fabric << ", Category: Fabric\n";
+     }
+
+     string getCategory() const override { return "Kurta"; }
+     string getExtra() const override { return fabric; }
+ };
+
  class Trouser : public Product {
      int waist;
  public:
@@ -114,6 +129,105 @@ public:
         }
         cout << "Product with ID " << id << " not found.\n";
     }
+
+ void searchProduct() const {
+     int choice;
+     cout << "\nSearch by:\n1. ID\n2. Name\nChoose option: ";
+     cin >> choice;
+
+     if (choice == 1) {
+         int id;
+         cout << "Enter Product ID: ";
+         cin >> id;
+         for (int i = 0; i < count; ++i) {
+             if (products[i]->getId() == id) {
+                 cout << "Product found:\n";
+                 products[i]->display();
+                 return;
+             }
+         }
+         cout << "No product found with ID " << id << endl;
+     }
+
+     else if (choice == 2) {
+         string name;
+         cout << "Enter Product Name: ";
+         cin.ignore();
+         getline(cin, name);
+         bool found = false;
+
+         for (int i = 0; i < count; ++i) {
+             if (products[i]->getName() == name) {
+                 if (!found) cout << "Matching product(s):\n";
+                 products[i]->display();
+                 found = true;
+             }
+         }
+
+         if (!found) {
+             cout << "No product found with name '" << name << "'\n";
+         }
+     }
+
+     else {
+         cout << "Invalid choice.\n";
+     }
+ }
+    
+
+     void updateProduct(int id) {
+     for (int i = 0; i < count; ++i) {
+         if (products[i]->getId() == id) {
+             string newName;
+             double newPrice;
+
+             cout << "Enter new name: ";
+             cin.ignore();
+             getline(cin, newName);
+
+             cout << "Enter new price: ";
+             cin >> newPrice;
+
+             string category = products[i]->getCategory();
+
+             if (category == "TShirt") {
+                 string newSize;
+                 cout << "Enter new size: ";
+                 cin >> newSize;
+                 delete products[i];
+                 products[i] = new TShirt(id, newName, newPrice, newSize);
+             }
+             else if (category == "Hoodie") {
+                 string newMaterial;
+                 cout << "Enter new material: ";
+                 cin >> newMaterial;
+                 delete products[i];
+                 products[i] = new Hoodie(id, newName, newPrice, newMaterial);
+             }
+             else if (category == "Kurta") {
+                 string newFabric;
+                 cout << "Enter new fabric: ";
+                 cin >> newFabric;
+                 delete products[i];
+                 products[i] = new Kurta(id, newName, newPrice, newFabric);
+             }
+             else if (category == "Trouser") {
+                 int newWaist;
+                 cout << "Enter new waist: ";
+                 cin >> newWaist;
+                 delete products[i];
+                 products[i] = new Trouser(id, newName, newPrice, newWaist);
+             }
+
+             cout << "Product updated successfully!\n";
+             saveToFile();
+             return;
+         }
+     }
+
+     cout << "Product with ID " << id << " not found.\n";
+ }
+
 
  
 
@@ -181,6 +295,8 @@ bool isDuplicateId(int id) const {
                 products[count++] = new TShirt(id, name, price, extra);
             else if (type == "Hoodie")
                 products[count++] = new Hoodie(id, name, price, extra);
+                else if (type == "Kurta")
+                 products[count++] = new Kurta(id, name, price, extra);
             else if (type == "Trouser")
                 products[count++] = new Trouser(id, name, price, stoi(extra));
 
@@ -199,8 +315,11 @@ void showMenu() {
     cout << "\n===== Clothing Management System =====\n";
     cout << "1. Add TShirt\n";
     cout << "2. Add Hoodie\n";
+    cout << "3. Add Kurta\n";
     cout << "4. Add Trouser\n";
     cout << "5. Delete Product\n";
+    cout << "6. Update Product\n";
+    cout << "7. Search Product by ID or Name\n";
     cout << "8. Filter by Category\n";
     cout << "9. Show All Products\n";
 
@@ -241,6 +360,18 @@ int main() {
             store.addProduct(new Hoodie(id, name, price, material));
             break;
         }
+
+            case 3:
+         {
+             string fabric;
+             cout << "Enter ID: "; cin >> id; cin.ignore();
+             cout << "Enter Name: "; getline(cin, name);
+             cout << "Enter Price: "; cin >> price;
+             cout << "Enter Fabric: "; cin >> fabric;
+             store.addProduct(new Kurta(id, name, price, fabric));
+             break;
+         }
+            
             case 4:
          {
              int waist;
@@ -259,6 +390,23 @@ int main() {
             store.deleteProduct(id);
             break;
         }
+
+            case 6:
+         {
+
+        
+             cout << "Enter ID to update: ";
+             cin >> id;
+             store.updateProduct(id);
+             break;
+         }
+
+         case 7:
+         {
+             store.searchProduct();
+             break;
+         }
+
            
             case 8:
          {
