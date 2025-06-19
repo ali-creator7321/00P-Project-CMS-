@@ -260,7 +260,7 @@ bool isDuplicateId(int id) const {
              return;
          }
          cout << "\n---- Product List ----\n";
-    /    for (int i = 0; i < count; ++i) {
+        for (int i = 0; i < count; ++i) {
              products[i]->display();
              cout << "----------------------\n";
          }
